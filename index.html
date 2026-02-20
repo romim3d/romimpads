@@ -573,11 +573,7 @@
   <p>SPIRITUAL SOUND ENGINE</p>
 </header>
 
-<!-- AVISO: estrutura de arquivos -->
-<div id="audioBanner" style="background:rgba(201,168,76,0.08);border-bottom:1px solid rgba(201,168,76,0.2);padding:8px 16px;text-align:center;font-size:0.7rem;letter-spacing:1px;color:#c9a84c;display:none;">
-  ⚠️ Coloque os arquivos MP3 na pasta <strong>audio/</strong> do repositório GitHub para que os pads funcionem.
-  <button onclick="document.getElementById('audioBanner').style.display='none'" style="margin-left:8px;background:none;border:none;color:#8a8070;cursor:pointer;font-size:0.8rem;">✕</button>
-</div>
+
 
 <div class="app">
 
@@ -756,8 +752,10 @@ async function loadBuffer(url) {
 }
 
 // ── Playback rate for key transposition + octave ──
+// Modo menor aplica -3 semitons (relativa menor natural)
 function getPlaybackRate(semitoneOffset, octave) {
-  return Math.pow(2, (semitoneOffset + octave*12) / 12);
+  const modeOffset = currentMode === 'minor' ? -3 : 0;
+  return Math.pow(2, (semitoneOffset + modeOffset + octave*12) / 12);
 }
 
 // ── Start a layer ──
@@ -903,6 +901,7 @@ function setMode(mode) {
   currentMode = mode;
   document.getElementById('btnMajor').classList.toggle('active', mode==='major');
   document.getElementById('btnMinor').classList.toggle('active', mode==='minor');
+  retuneSources();
   updateStatus();
 }
 
@@ -1214,10 +1213,7 @@ async function init() {
     return;
   }
 
-  // Show audio folder reminder banner
-  document.getElementById('audioBanner').style.display = 'block';
-
-  msg.textContent = 'Construindo interface...';
+msg.textContent = 'Construindo interface...';
   bar.style.width = '30%';
   renderKeys();
   renderLayers();
