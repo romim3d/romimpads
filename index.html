@@ -617,6 +617,7 @@
 <div class="status-bar" id="statusBar">
     Tom: <span id="statusKey">C Maior</span> | Layers ativos: <span id="statusLayers">0</span>
   </div>
+  <div id="pitchDebug" style="text-align:center;font-size:0.65rem;color:#c9a84c;letter-spacing:1px;margin-bottom:8px;opacity:0.7;">playbackRate: <span id="rateDisplay">1.000</span> | nota base: C</div>
 
   <!-- KEY SELECTOR -->
   <div class="key-section">
@@ -963,9 +964,14 @@ function setMode(mode) {
 // ── Key select ──
 function setKey(idx) {
   currentKey = idx;
-  if(typeof updateDebug !== "undefined") updateDebug();
   renderKeys();
   retuneSources();
+  // Se estiver tocando, reinicia layers para garantir pitch correto
+  if (isPlaying) {
+    for (const layer of layers) {
+      if (layer.enabled) startLayer(layer);
+    }
+  }
   updateStatus();
 }
 
@@ -975,6 +981,10 @@ function updateStatus() {
   document.getElementById('statusKey').textContent = `${KEY_LABELS[currentKey]} ${mode}`;
   const count = layers.filter(l => l.enabled && isPlaying).length;
   document.getElementById('statusLayers').textContent = count;
+  // Mostra playbackRate atual para debug
+  const rate = getPlaybackRate(currentKey, 0);
+  const rateEl = document.getElementById('rateDisplay');
+  if (rateEl) rateEl.textContent = rate.toFixed(4);
 }
 
 // ══════════════════════════════
