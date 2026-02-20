@@ -599,7 +599,22 @@
 <div class="app">
 
   <!-- STATUS -->
-  <div class="status-bar" id="statusBar">
+  
+  <!-- DEBUG PANEL -->
+  <div id="debugPanel" style="background:#1a1a2e;border:1px solid #c9a84c;border-radius:8px;padding:10px;margin-bottom:10px;text-align:center;">
+    <div style="color:#c9a84c;font-size:0.7rem;letter-spacing:2px;margin-bottom:8px;">🔧 DIAGNÓSTICO DE TOM</div>
+    <div style="color:#e8e0d0;font-size:0.75rem;margin-bottom:8px;">
+      Tom selecionado: <span id="dbgSelected" style="color:#e8c97a;font-weight:bold;">—</span> &nbsp;|&nbsp; 
+      Offset atual: <span id="dbgOffset" style="color:#e8c97a;font-weight:bold;">0</span> semitons
+    </div>
+    <div style="display:flex;gap:6px;justify-content:center;align-items:center;">
+      <button onclick="dbgChange(-1)" style="background:#c0392b;border:none;color:white;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:0.8rem;">− Descer</button>
+      <span id="dbgNote" style="color:#2ecc71;font-weight:bold;font-size:1rem;min-width:60px;display:inline-block;">C</span>
+      <button onclick="dbgChange(1)" style="background:#27ae60;border:none;color:white;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:0.8rem;">+ Subir</button>
+    </div>
+    <div style="color:#8a8070;font-size:0.6rem;margin-top:6px;">Ajuste até ouvir a nota correta, depois me diga o offset</div>
+  </div>
+<div class="status-bar" id="statusBar">
     Tom: <span id="statusKey">C Maior</span> | Layers ativos: <span id="statusLayers">0</span>
   </div>
 
@@ -772,11 +787,29 @@ async function loadBuffer(url) {
   }
 }
 
-// ── Playback rate for key transposition + octave ──
-// Correção: Cm estava soando F#m → distância de +6 semitons para corrigir
+
+// ── DEBUG TOOL ──
+let dbgOffset = 0;
+const NOTE_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+
+function dbgChange(delta) {
+  dbgOffset += delta;
+  updateDebug();
+  retuneSources();
+}
+
+function updateDebug() {
+  const noteIdx = ((currentKey + dbgOffset) % 12 + 12) % 12;
+  const modeLabel = currentMode === 'minor' ? 'm' : ' Maior';
+  document.getElementById('dbgSelected').textContent = NOTE_NAMES[currentKey] + (currentMode === 'minor' ? 'm' : ' Maior');
+  document.getElementById('dbgOffset').textContent = (dbgOffset >= 0 ? '+' : '') + dbgOffset;
+  document.getElementById('dbgNote').textContent = NOTE_NAMES[noteIdx] + (currentMode === 'minor' ? 'm' : '');
+}
+
+// Override getPlaybackRate to use dbgOffset
 function getPlaybackRate(semitoneOffset, octave) {
-  const modeOffset = currentMode === "minor" ? 6 : 0;
-  return Math.pow(2, (semitoneOffset + modeOffset + octave * 12) / 12);
+  const modeOff = currentMode === 'minor' ? dbgOffset : 0;
+  return Math.pow(2, (semitoneOffset + modeOff + octave * 12) / 12);
 }
 
 // ── Start a layer ──
@@ -920,6 +953,7 @@ function updateMaster() {
 // ── Mode ──
 function setMode(mode) {
   currentMode = mode;
+  if(typeof updateDebug !== "undefined") updateDebug();
   document.getElementById('btnMajor').classList.toggle('active', mode==='major');
   document.getElementById('btnMinor').classList.toggle('active', mode==='minor');
   retuneSources();
@@ -929,6 +963,7 @@ function setMode(mode) {
 // ── Key select ──
 function setKey(idx) {
   currentKey = idx;
+  if(typeof updateDebug !== "undefined") updateDebug();
   renderKeys();
   retuneSources();
   updateStatus();
