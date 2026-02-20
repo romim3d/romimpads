@@ -808,8 +808,8 @@ function updateDebug() {
 
 // Override getPlaybackRate to use dbgOffset
 function getPlaybackRate(semitoneOffset, octave) {
-  const modeOff = currentMode === 'minor' ? dbgOffset : 0;
-  return Math.pow(2, (semitoneOffset + modeOff + octave * 12) / 12);
+  const modeOffset = currentMode === 'minor' ? 6 : 0;
+  return Math.pow(2, (semitoneOffset + modeOffset + octave * 12) / 12);
 }
 
 // ── Start a layer ──
