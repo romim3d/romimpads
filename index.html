@@ -773,10 +773,10 @@ async function loadBuffer(url) {
 }
 
 // ── Playback rate for key transposition + octave ──
-// Pads gravados em C — transposição apenas pelo tom selecionado (semitoneOffset).
-// Modo maior/menor NÃO altera a transposição; é somente indicação visual de tonalidade.
+// Correção: Cm estava soando F#m → distância de +6 semitons para corrigir
 function getPlaybackRate(semitoneOffset, octave) {
-  return Math.pow(2, (semitoneOffset + octave * 12) / 12);
+  const modeOffset = currentMode === "minor" ? 6 : 0;
+  return Math.pow(2, (semitoneOffset + modeOffset + octave * 12) / 12);
 }
 
 // ── Start a layer ──
