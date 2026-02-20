@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Worship Pads</title>
+<title>Baruk Pads</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#080c14">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Worship Pads">
+<meta name="apple-mobile-web-app-title" content="Baruk Pads">
 <style>
   /* Cinzel fallback — usa Georgia/serif quando offline */
   /* Rajdhani fallback — usa system-ui/sans-serif quando offline */
@@ -79,6 +79,81 @@
     opacity: 0.8;
     text-align: left;
   }
+
+
+  /* ── BARUK destaque ── */
+  .baruk-gold {
+    color: #f0a500;
+    text-shadow: 0 0 18px rgba(240,165,0,0.7), 0 0 40px rgba(240,165,0,0.3);
+    font-style: italic;
+    letter-spacing: 4px;
+  }
+  .pads-small {
+    font-size: 0.65em;
+    letter-spacing: 4px;
+    color: var(--gold-light);
+    opacity: 0.85;
+  }
+  .loading-title .baruk-gold { font-size: 1.1em; }
+  .loading-title .pads-small { font-size: 0.7em; }
+
+  /* ── TOP CONTROLS ── */
+  .top-controls {
+    background: var(--card);
+    border: 1px solid rgba(201,168,76,0.2);
+    border-radius: 14px;
+    padding: 12px;
+    margin-bottom: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .top-transport {
+    display: flex;
+    gap: 8px;
+  }
+  .top-transport .play-btn {
+    flex: 2;
+    padding: 16px 8px;
+    font-size: clamp(0.85rem, 3.5vw, 1rem);
+    border-radius: 10px;
+  }
+  .top-transport .stop-btn {
+    flex: 1;
+    padding: 16px 8px;
+    border-radius: 10px;
+    font-size: clamp(0.8rem, 3vw, 0.9rem);
+    background: var(--card2);
+    color: var(--text-dim);
+    border: 1px solid rgba(255,255,255,0.1);
+    cursor: pointer;
+    font-family: 'Cinzel', Georgia, serif;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+  }
+  .top-transport .reset-btn {
+    flex: 0.55;
+    padding: 16px 4px;
+    border-radius: 10px;
+    font-size: clamp(1rem, 4vw, 1.2rem);
+    background: var(--card2);
+    color: var(--text-dim);
+    border: 1px solid rgba(255,255,255,0.1);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .top-transport .stop-btn:active,
+  .top-transport .reset-btn:active { transform: scale(0.95); }
+  .top-sliders { display: flex; flex-direction: column; gap: 6px; }
+  .top-slider-row { display: flex; align-items: center; gap: 10px; }
+  .top-slider-label {
+    font-size: clamp(0.6rem, 2.2vw, 0.7rem);
+    letter-spacing: 1.5px;
+    color: var(--text-dim);
+    min-width: 28px;
+    font-family: 'Rajdhani', system-ui, sans-serif;
+  }
+  .top-controls .status-bar { margin-bottom: 0; border-radius: 8px; }
 
   /* ── KEY SELECTOR ── */
   .key-section { margin-bottom: 14px; }
@@ -205,7 +280,7 @@
   .layer-toggle.on::after { left: 16px; background: var(--green); }
 
   .layer-controls {
-    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
   }
   .ctrl-group { display: flex; flex-direction: column; gap: 3px; }
   .ctrl-label { font-size: clamp(0.58rem, 2.2vw, 0.68rem); letter-spacing: 1px; color: var(--text-dim); text-align: center; }
@@ -583,39 +658,42 @@
 </div>
 
 <div class="loading-overlay" id="loadingOverlay">
-  <div class="loading-title">WORSHIP PADS</div>
+  <div class="loading-title"><span class="baruk-gold">BARUK</span> <span class="pads-small">PADS</span></div>
   <div class="loading-sub">SPIRITUAL SOUND ENGINE</div>
   <div class="loading-bar-wrap"><div class="loading-bar" id="loadingBar"></div></div>
   <div class="loading-msg" id="loadingMsg">Iniciando...</div>
 </div>
 
 <header>
-  <h1>WORSHIP PADS</h1>
+  <h1><span class="baruk-gold">BARUK</span> <span class="pads-small">PADS</span></h1>
   <p>SPIRITUAL SOUND ENGINE</p>
 </header>
 
 
 
 <div class="app">
-
-  <!-- STATUS -->
-  
-  <!-- DEBUG PANEL -->
-  <div id="debugPanel" style="background:#1a1a2e;border:1px solid #c9a84c;border-radius:8px;padding:10px;margin-bottom:10px;text-align:center;">
-    <div style="color:#c9a84c;font-size:0.7rem;letter-spacing:2px;margin-bottom:8px;">🔧 DIAGNÓSTICO DE TOM</div>
-    <div style="color:#e8e0d0;font-size:0.75rem;margin-bottom:8px;">
-      Tom selecionado: <span id="dbgSelected" style="color:#e8c97a;font-weight:bold;">—</span> &nbsp;|&nbsp; 
-      Offset atual: <span id="dbgOffset" style="color:#e8c97a;font-weight:bold;">0</span> semitons
+  <!-- TOP CONTROLS -->
+  <div class="top-controls">
+    <div class="top-transport">
+      <button class="play-btn" id="playBtn" onclick="togglePlay()">▶ PLAY</button>
+      <button class="stop-btn" onclick="stopAll()">■ STOP</button>
+      <button class="reset-btn" onclick="resetConfig()">↺</button>
     </div>
-    <div style="display:flex;gap:6px;justify-content:center;align-items:center;">
-      <button onclick="dbgChange(-1)" style="background:#c0392b;border:none;color:white;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:0.8rem;">− Descer</button>
-      <span id="dbgNote" style="color:#2ecc71;font-weight:bold;font-size:1rem;min-width:60px;display:inline-block;">C</span>
-      <button onclick="dbgChange(1)" style="background:#27ae60;border:none;color:white;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:0.8rem;">+ Subir</button>
+    <div class="top-sliders">
+      <div class="top-slider-row">
+        <span class="top-slider-label">VOL</span>
+        <input type="range" class="master-slider" id="masterVolume" min="0" max="100" value="80" oninput="updateMaster()">
+        <span class="master-val" id="masterVolVal">80%</span>
+      </div>
+      <div class="top-slider-row">
+        <span class="top-slider-label">REV</span>
+        <input type="range" class="master-slider" id="masterReverb" min="0" max="100" value="40" oninput="updateMaster()">
+        <span class="master-val" id="masterRevVal">40%</span>
+      </div>
     </div>
-    <div style="color:#8a8070;font-size:0.6rem;margin-top:6px;">Ajuste até ouvir a nota correta, depois me diga o offset</div>
-  </div>
-<div class="status-bar" id="statusBar">
-    Tom: <span id="statusKey">C Maior</span> | Layers ativos: <span id="statusLayers">0</span>
+    <div class="status-bar" id="statusBar">
+      Tom: <span id="statusKey">C Maior</span> &nbsp;|&nbsp; Layers: <span id="statusLayers">0</span>
+    </div>
   </div>
 
   <!-- KEY SELECTOR -->
@@ -643,28 +721,6 @@
   <div class="layers-section">
     <div class="sec-title">Layers de Mixagem</div>
     <div id="layersContainer"></div>
-  </div>
-
-  <!-- MASTER -->
-  <div class="master-section">
-    <div class="sec-title">Master</div>
-    <div class="master-row">
-      <div class="master-label">VOLUME</div>
-      <input type="range" class="master-slider" id="masterVolume" min="0" max="100" value="80" oninput="updateMaster()">
-      <div class="master-val" id="masterVolVal">80%</div>
-    </div>
-    <div class="master-row">
-      <div class="master-label">REVERB</div>
-      <input type="range" class="master-slider" id="masterReverb" min="0" max="100" value="40" oninput="updateMaster()">
-      <div class="master-val" id="masterRevVal">40%</div>
-    </div>
-  </div>
-
-  <!-- TRANSPORT -->
-  <div class="transport">
-    <button class="play-btn" id="playBtn" onclick="togglePlay()">▶ PLAY</button>
-    <button class="stop-btn" onclick="stopAll()">■ STOP</button>
-    <button class="reset-btn" onclick="resetConfig()">↺ RESET</button>
   </div>
 
 </div>
@@ -788,25 +844,6 @@ async function loadBuffer(url) {
 }
 
 
-// ── DEBUG TOOL ──
-let dbgOffset = 0;
-const NOTE_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
-
-function dbgChange(delta) {
-  dbgOffset += delta;
-  updateDebug();
-  retuneSources();
-}
-
-function updateDebug() {
-  const noteIdx = ((currentKey + dbgOffset) % 12 + 12) % 12;
-  const modeLabel = currentMode === 'minor' ? 'm' : ' Maior';
-  document.getElementById('dbgSelected').textContent = NOTE_NAMES[currentKey] + (currentMode === 'minor' ? 'm' : ' Maior');
-  document.getElementById('dbgOffset').textContent = (dbgOffset >= 0 ? '+' : '') + dbgOffset;
-  document.getElementById('dbgNote').textContent = NOTE_NAMES[noteIdx] + (currentMode === 'minor' ? 'm' : '');
-}
-
-// Override getPlaybackRate to use dbgOffset
 function getPlaybackRate(semitoneOffset, octave) {
   return Math.pow(2, (semitoneOffset + octave * 12) / 12);
 }
@@ -952,19 +989,19 @@ function updateMaster() {
 // ── Mode ──
 function setMode(mode) {
   currentMode = mode;
-  if(typeof updateDebug !== "undefined") updateDebug();
   document.getElementById('btnMajor').classList.toggle('active', mode==='major');
   document.getElementById('btnMinor').classList.toggle('active', mode==='minor');
   retuneSources();
+  if (isPlaying) { for (const layer of layers) { if (layer.enabled) startLayer(layer); } }
   updateStatus();
 }
 
 // ── Key select ──
 function setKey(idx) {
   currentKey = idx;
-  if(typeof updateDebug !== "undefined") updateDebug();
   renderKeys();
   retuneSources();
+  if (isPlaying) { for (const layer of layers) { if (layer.enabled) startLayer(layer); } }
   updateStatus();
 }
 
@@ -1020,13 +1057,6 @@ function renderLayers() {
           <div class="ctrl-label">VOLUME</div>
           <input type="range" class="ctrl-slider" min="0" max="100" value="${layer.volume}"
             oninput="onLayerVolume(${layer.id}, this.value)">
-        </div>
-        <div class="ctrl-group">
-          <div class="ctrl-label">FADE LOOP</div>
-          <div class="fade-btns">
-            <button class="fade-btn fade-in-btn" onclick="triggerFade(${layer.id}, 1)">▲IN</button>
-            <button class="fade-btn fade-out-btn" onclick="triggerFade(${layer.id}, -1)">▼OUT</button>
-          </div>
         </div>
         <div class="ctrl-group">
           <div class="ctrl-label">OITAVA</div>
@@ -1316,14 +1346,7 @@ window.onload = init;
 
 // ── Service Worker Registration ──
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', async () => {
-    // Desregistra todos os service workers antigos e limpa caches
-    const regs = await navigator.serviceWorker.getRegistrations();
-    for (const reg of regs) await reg.unregister();
-    const keys = await caches.keys();
-    for (const key of keys) await caches.delete(key);
-
-    // Registra o novo SW
+  window.addEventListener('load', () => {
     navigator.serviceWorker.register('sw.js').then(reg => {
       console.log('SW registrado:', reg.scope);
     }).catch(err => {

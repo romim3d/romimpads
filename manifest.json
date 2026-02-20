@@ -1,7 +1,7 @@
 {
-  "name": "Worship Pads",
-  "short_name": "Worship Pads",
-  "description": "Spiritual Sound Engine — Worship Pads",
+  "name": "Baruk Pads",
+  "short_name": "Baruk Pads",
+  "description": "Spiritual Sound Engine — Baruk Pads",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#080c14",
@@ -19,6 +19,9 @@
       "type": "image/svg+xml"
     }
   ],
-  "categories": ["music", "entertainment"],
+  "categories": [
+    "music",
+    "entertainment"
+  ],
   "lang": "pt-BR"
 }
