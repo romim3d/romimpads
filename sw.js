@@ -2,15 +2,8 @@
 //  WORSHIP PADS — SERVICE WORKER (Offline First)
 // ══════════════════════════════════════════════
 
-const CACHE_NAME = 'worship-pads-v1';
+const CACHE_NAME = 'worship-pads-v3'; // ← versão incrementada para forçar atualização
 
-// Arquivos essenciais (sempre em cache)
-const CORE_FILES = [
-  './',
-  './index.html',
-];
-
-// Arquivos de áudio — serão cacheados quando carregados pela primeira vez
 const AUDIO_FILES = [
   'audio/ambiente1.mp3',
   'audio/ambiente2.mp3',
@@ -33,80 +26,70 @@ const AUDIO_FILES = [
   'audio/worship.mp3',
 ];
 
-// ── INSTALL: cacheia os arquivos principais ──
+// ── INSTALL ──
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
-      // Cacheia arquivos principais (obrigatórios)
-      return cache.addAll(CORE_FILES).then(() => {
-        // Tenta cachear áudios, mas ignora erros individuais
-        return Promise.allSettled(
-          AUDIO_FILES.map(url =>
-            fetch(url).then(resp => {
-              if (resp.ok) return cache.put(url, resp);
-            }).catch(() => {/* arquivo não existe ainda, tudo bem */})
-          )
-        );
-      });
+      return Promise.allSettled(
+        AUDIO_FILES.map(url =>
+          fetch(url).then(resp => {
+            if (resp.ok) return cache.put(url, resp);
+          }).catch(() => {})
+        )
+      );
     }).then(() => self.skipWaiting())
   );
 });
 
-// ── ACTIVATE: limpa caches antigos ──
+// ── ACTIVATE: apaga todos os caches antigos ──
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(
-        keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
-      )
+      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
     ).then(() => self.clients.claim())
   );
 });
 
-// ── FETCH: Cache First para tudo ──
+// ── FETCH ──
 self.addEventListener('fetch', event => {
-  // Ignora requisições não-GET
   if (event.request.method !== 'GET') return;
 
   const url = new URL(event.request.url);
+  const isHTML = event.request.headers.get('accept')?.includes('text/html') || url.pathname.endsWith('.html') || url.pathname.endsWith('/');
+  const isAudio = url.pathname.endsWith('.mp3');
 
-  // Estratégia: Cache First → Network → Fallback
-  event.respondWith(
-    caches.match(event.request).then(cached => {
-      if (cached) return cached;
+  if (isHTML) {
+    // HTML: Network First → sempre pega versão mais recente
+    event.respondWith(
+      fetch(event.request).catch(() => caches.match('./index.html'))
+    );
+    return;
+  }
 
-      // Não está no cache, busca na rede e salva
-      return fetch(event.request).then(response => {
-        // Só cacheia respostas válidas
-        if (!response || response.status !== 200 || response.type === 'error') {
+  if (isAudio) {
+    // Áudio: Cache First (economiza banda)
+    event.respondWith(
+      caches.match(event.request).then(cached => {
+        if (cached) return cached;
+        return fetch(event.request).then(response => {
+          if (response && response.status === 200) {
+            const toCache = response.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(event.request, toCache));
+          }
           return response;
-        }
+        }).catch(() => new Response('', { status: 404 }));
+      })
+    );
+    return;
+  }
 
-        const toCache = response.clone();
-        caches.open(CACHE_NAME).then(cache => {
-          cache.put(event.request, toCache);
-        });
-
-        return response;
-      }).catch(() => {
-        // Offline e não está no cache
-        // Para arquivos de áudio, retorna 404 silencioso
-        if (event.request.url.match(/\.mp3$/i)) {
-          return new Response('', { status: 404, statusText: 'Offline - arquivo de áudio não cacheado' });
-        }
-        // Para HTML, retorna o index do cache
-        if (event.request.headers.get('accept')?.includes('text/html')) {
-          return caches.match('./index.html');
-        }
-        return new Response('Offline', { status: 503 });
-      });
-    })
+  // Outros arquivos: Network First
+  event.respondWith(
+    fetch(event.request).catch(() => caches.match(event.request))
   );
 });
 
-// ── MESSAGE: permite forçar atualização do cache ──
+// ── MESSAGE ──
 self.addEventListener('message', event => {
-  if (event.data === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
+  if (event.data === 'SKIP_WAITING') self.skipWaiting();
 });
