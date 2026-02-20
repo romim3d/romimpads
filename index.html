@@ -808,8 +808,7 @@ function updateDebug() {
 
 // Override getPlaybackRate to use dbgOffset
 function getPlaybackRate(semitoneOffset, octave) {
-  const modeOffset = currentMode === 'minor' ? 3 : 0;
-  return Math.pow(2, (semitoneOffset + modeOffset + octave * 12) / 12);
+  return Math.pow(2, (semitoneOffset + octave * 12) / 12);
 }
 
 // ── Start a layer ──
@@ -1317,7 +1316,14 @@ window.onload = init;
 
 // ── Service Worker Registration ──
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
+  window.addEventListener('load', async () => {
+    // Desregistra todos os service workers antigos e limpa caches
+    const regs = await navigator.serviceWorker.getRegistrations();
+    for (const reg of regs) await reg.unregister();
+    const keys = await caches.keys();
+    for (const key of keys) await caches.delete(key);
+
+    // Registra o novo SW
     navigator.serviceWorker.register('sw.js').then(reg => {
       console.log('SW registrado:', reg.scope);
     }).catch(err => {

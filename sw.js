@@ -2,7 +2,7 @@
 //  WORSHIP PADS — SERVICE WORKER (Offline First)
 // ══════════════════════════════════════════════
 
-const CACHE_NAME = 'worship-pads-v5';
+const CACHE_NAME = 'worship-pads-v6';
 
 // Arquivos essenciais (sempre em cache)
 const CORE_FILES = [
